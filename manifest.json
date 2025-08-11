@@ -1,0 +1,19 @@
+{
+    "name": "Mountains App",
+    "short_name": "Mountains App",
+    "description": "Aplicación para localizar montanas",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#667eea",
+    "theme_color": "#667eea",
+    "orientation": "portrait-primary",
+    "icons": [
+           {
+        "src": "icon-512x512.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      
+      }
+    ]
+  
+  }
