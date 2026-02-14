@@ -4,5 +4,6 @@
 // - Maps Static API
 //
 // IMPORTANT: Any key used in frontend code is public. Restrict it by HTTP referrer.
-window.GOOGLE_MAPS_API_KEY = ;
+window.GOOGLE_MAPS_API_KEY = "PASTE_YOUR_KEY_HERE";
+
 
