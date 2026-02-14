@@ -132,6 +132,33 @@ function getGoogleMapsKey() {
   return k || "";
 }
 
+function loadGoogleMapsJsApi(key) {
+  if (!key) return Promise.reject(new Error("missing key"));
+  if (window.google && window.google.maps) return Promise.resolve();
+
+  if (window.__googleMapsJsLoading) return window.__googleMapsJsLoading;
+
+  window.__googleMapsJsLoading = new Promise((resolve, reject) => {
+    const existing = document.querySelector('script[data-google-maps-js="1"]');
+    if (existing) {
+      existing.addEventListener("load", () => resolve());
+      existing.addEventListener("error", () => reject(new Error("google maps js load failed")));
+      return;
+    }
+
+    const s = document.createElement("script");
+    s.dataset.googleMapsJs = "1";
+    s.async = true;
+    s.defer = true;
+    s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&v=weekly`;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error("google maps js load failed"));
+    document.head.appendChild(s);
+  });
+
+  return window.__googleMapsJsLoading;
+}
+
 function buildStreetViewMetadataUrl({ lat, lon, key, source, radius = 200 }) {
   const u = new URL("https://maps.googleapis.com/maps/api/streetview/metadata");
   u.searchParams.set("location", `${lat},${lon}`);
@@ -212,7 +239,35 @@ async function tryHydrateGoogleImages(mountain) {
   const headings = [0, 90, 180, 270];
   const heroUrl = buildStreetViewStaticUrl({ lat: svLat, lon: svLon, key, pano, heading: 0, pitch: 0, fov: 90, size: "640x640" });
   setImg("heroImg", heroUrl, `Street View: ${mountain.name}`);
-  setText("streetViewHint", "Street View cargado. Pulsa una miniatura para rotar la vista.");
+  setText("streetViewHint", "Street View cargado. Puedes arrastrar el visor 360 o pulsar miniaturas.");
+
+  // Try to render an interactive panorama (true 360) using Google Maps JS API.
+  const panoEl = qs("streetViewPanorama");
+  if (panoEl) {
+    try {
+      await loadGoogleMapsJsApi(key);
+      panoEl.classList.remove("hidden");
+      // eslint-disable-next-line no-undef
+      const panorama = new google.maps.StreetViewPanorama(panoEl, {
+        pano,
+        pov: { heading: 0, pitch: 0 },
+        zoom: 0,
+        addressControl: false,
+        fullscreenControl: true,
+        linksControl: true,
+        motionTracking: false,
+        panControl: false,
+        zoomControl: true,
+        showRoadLabels: false,
+        disableDefaultUI: true
+      });
+      // Keep a reference in case we want to reuse later.
+      window.__streetViewPanorama = panorama;
+    } catch (e) {
+      // If Maps JS API isn't enabled, we keep the static thumbnails only.
+      panoEl.classList.add("hidden");
+    }
+  }
 
   const strip = qs("streetView360");
   if (strip) {
@@ -231,6 +286,9 @@ async function tryHydrateGoogleImages(mountain) {
 
       btn.appendChild(img);
       btn.addEventListener("click", () => {
+        if (window.__streetViewPanorama && typeof window.__streetViewPanorama.setPov === "function") {
+          window.__streetViewPanorama.setPov({ heading: h, pitch: 0 });
+        }
         setImg("heroImg", buildStreetViewStaticUrl({ lat: svLat, lon: svLon, key, pano, heading: h, pitch: 0, fov: 90, size: "640x640" }), `Street View: ${mountain.name}`);
       });
       strip.appendChild(btn);
