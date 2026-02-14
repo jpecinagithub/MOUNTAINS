@@ -426,7 +426,7 @@ async function hydratePage() {
     }
     try {
       await navigator.clipboard.writeText(url);
-      setText("historySource", "Enlace copiado al portapapeles.");
+      setText("streetViewHint", "Enlace copiado al portapapeles.");
     } catch {
       // ignore
     }
@@ -454,33 +454,24 @@ async function hydratePage() {
   // Falls back to Wikipedia/Unsplash if not available.
   const googleRes = await tryHydrateGoogleImages(mountain);
 
-  // History + image (Wikipedia best-effort).
-  let summary = null;
-  try {
-    const wp = parseWikipediaTag(mountain.wikipedia);
-    if (wp) summary = await wikipediaSummaryByTitle(wp.lang, wp.title);
-    else summary = await wikipediaSummaryBySearch(mountain.name);
-  } catch {
-    summary = null;
-  }
+  // Optional Wikipedia/Unsplash enrichment removed by request (Historia section).
+  // Keep the current hero image if Google Street View is available; otherwise,
+  // provide a best-effort photo.
+  if (!googleRes?.streetView) {
+    let summary = null;
+    try {
+      const wp = parseWikipediaTag(mountain.wikipedia);
+      if (wp) summary = await wikipediaSummaryByTitle(wp.lang, wp.title);
+      else summary = await wikipediaSummaryBySearch(mountain.name);
+    } catch {
+      summary = null;
+    }
 
-  if (summary?.extract) {
-    setText("historyText", summary.extract);
-    if (summary?.content_urls?.desktop?.page) {
-      const pageUrl = safeUrl(summary.content_urls.desktop.page);
-      if (pageUrl) {
-        setHtml("historySource", `Fuente: <a class="underline hover:text-primary" href="${pageUrl}" target="_blank" rel="noreferrer">Wikipedia</a>`);
-      }
-    }
     const thumb = summary?.thumbnail?.source;
-    if (thumb && !googleRes?.streetView) {
+    if (thumb) {
       setImg("heroImg", thumb, `Imagen de ${mountain.name}`);
-    }
-  } else {
-    setText("historyText", "Historia no disponible automaticamente. Si esta montana tiene pagina en Wikipedia, puedes anadir el tag OSM 'wikipedia' para mejorar esta seccion.");
-    // Last-resort image that usually works without keys.
-    const fallback = `https://source.unsplash.com/featured/1200x800/?mountain,peak,${encodeURIComponent(mountain.name)}`;
-    if (!googleRes?.streetView) {
+    } else {
+      const fallback = `https://source.unsplash.com/featured/1200x800/?mountain,peak,${encodeURIComponent(mountain.name)}`;
       setImg("heroImg", fallback, `Imagen de ${mountain.name}`);
     }
   }
@@ -488,6 +479,7 @@ async function hydratePage() {
 
 document.addEventListener("DOMContentLoaded", () => {
   hydratePage().catch(() => {
-    setText("historyText", "No se pudo cargar la informacion detallada.");
+    // Keep failure feedback minimal; the page remains usable without enrichment.
+    setText("streetViewHint", "No se pudo cargar alguna informacion de la pagina.");
   });
 });
