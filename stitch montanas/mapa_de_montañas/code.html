@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#11d411",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102210",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .map-gradient {
+            background: radial-gradient(circle at center, #1a2e1a 0%, #102210 100%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased overflow-hidden">
+<!-- Main Container (Full Screen Map) -->
+<div class="relative h-screen w-full flex flex-col">
+<!-- Background Map Simulation -->
+<div class="absolute inset-0 z-0 map-gradient" data-location="Pyrenees Mountains, Spain" style="">
+<!-- Simulated Topographical Lines / Grid Overlay -->
+<div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#11d411 1px, transparent 1px); background-size: 40px 40px;"></div>
+<!-- Map Markers -->
+<!-- Marker 1: Monte Aneto (Active) -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 group cursor-pointer">
+<div class="relative flex flex-col items-center">
+<div class="bg-primary text-background-dark p-2 rounded-full shadow-[0_0_15px_rgba(17,212,17,0.5)] z-10 border-2 border-white/20">
+<span class="material-symbols-outlined block text-2xl">mountain_flag</span>
+</div>
+<div class="mt-2 bg-background-dark/90 backdrop-blur-md px-3 py-1 rounded-lg border border-primary/30">
+<p class="text-xs font-bold text-white whitespace-nowrap">Monte Aneto</p>
+</div>
+<!-- Pulse effect for active marker -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-primary/20 rounded-full animate-ping"></div>
+</div>
+</div>
+<!-- Marker 2: Posets -->
+<div class="absolute top-[30%] left-[40%] group cursor-pointer opacity-70 hover:opacity-100 transition-opacity">
+<div class="flex flex-col items-center">
+<div class="bg-slate-700 text-white p-1.5 rounded-full shadow-lg border border-white/10">
+<span class="material-symbols-outlined block text-xl">landscape</span>
+</div>
+</div>
+</div>
+<!-- Marker 3: Monte Perdido -->
+<div class="absolute top-[60%] left-[65%] group cursor-pointer opacity-70 hover:opacity-100 transition-opacity">
+<div class="flex flex-col items-center">
+<div class="bg-slate-700 text-white p-1.5 rounded-full shadow-lg border border-white/10">
+<span class="material-symbols-outlined block text-xl">landscape</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Top Search Bar Overlay -->
+<div class="relative z-20 px-4 pt-6 md:px-8 max-w-2xl mx-auto w-full">
+<div class="flex items-center gap-3 bg-background-dark/80 backdrop-blur-xl border border-white/10 p-2 rounded-xl shadow-2xl">
+<button class="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="flex-1 flex items-center">
+<span class="material-symbols-outlined text-slate-400 mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-white placeholder-slate-400 w-full font-display" placeholder="Buscar ubicación o montaña..." type="text"/>
+</div>
+<button class="p-2 text-slate-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined">mic</span>
+</button>
+</div>
+<!-- Quick Filter Tags -->
+<div class="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-hide">
+<button class="bg-primary text-background-dark px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-1 whitespace-nowrap">
+<span class="material-symbols-outlined text-sm">filter_hdr</span> Cumbres
+                </button>
+<button class="bg-background-dark/60 backdrop-blur-md text-white border border-white/10 px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-1 whitespace-nowrap hover:bg-background-dark/80 transition-colors">
+<span class="material-symbols-outlined text-sm">route</span> Rutas
+                </button>
+<button class="bg-background-dark/60 backdrop-blur-md text-white border border-white/10 px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-1 whitespace-nowrap hover:bg-background-dark/80 transition-colors">
+<span class="material-symbols-outlined text-sm">ac_unit</span> Nieve
+                </button>
+</div>
+</div>
+<!-- Floating Action Buttons (Right Side) -->
+<div class="absolute right-4 bottom-48 z-20 flex flex-col gap-3">
+<button class="bg-background-dark/80 backdrop-blur-md text-white p-3 rounded-xl border border-white/10 shadow-lg hover:bg-primary hover:text-background-dark transition-all group">
+<span class="material-symbols-outlined block group-hover:scale-110 transition-transform">layers</span>
+</button>
+<button class="bg-background-dark/80 backdrop-blur-md text-white p-3 rounded-xl border border-white/10 shadow-lg hover:bg-primary hover:text-background-dark transition-all group">
+<span class="material-symbols-outlined block group-hover:scale-110 transition-transform">explore</span>
+</button>
+<button class="bg-white text-background-dark p-3 rounded-xl shadow-xl hover:bg-primary transition-all group active:scale-95">
+<span class="material-symbols-outlined block font-bold">my_location</span>
+</button>
+</div>
+<!-- Bottom Mountain Preview Card -->
+<div class="absolute bottom-6 left-4 right-4 z-30 max-w-md mx-auto">
+<div class="bg-background-dark/90 backdrop-blur-2xl border border-primary/20 rounded-2xl shadow-2xl overflow-hidden p-4">
+<!-- Card Header -->
+<div class="flex gap-4">
+<div class="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 border border-white/10 relative">
+<img alt="Monte Aneto Preview" class="w-full h-full object-cover" data-alt="Snowy mountain peak under clear sky" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCldRn6sHiHU48EyC06dblr63_Rr-zVIMx8Hls5Oow42lF4f3jBzhMaYIMgV1AxJkMRWvV_5H2VxjDVF3cTXbRE7LvltuCNEiibogSt-KvYfGB5K6jz-LqtSwrtY3RM7Y0sk4SQ1YxKceOEpHWq2hBMYs0EsAFsMtLRHtlo43dkBsSRdhOZbF4ETkoDQ_V9AWYS9Ae68xTaqoocxlC5dejJeN2-2_e9uoX3_RXZeBTPNQhHPiR3d1Bfju0jMLNNQvy-nSRkmvIfSXM"/>
+<div class="absolute top-1 left-1 bg-background-dark/80 rounded px-1.5 py-0.5 border border-white/10">
+<p class="text-[10px] font-bold text-primary">CIMA</p>
+</div>
+</div>
+<div class="flex-1 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start">
+<h3 class="text-xl font-bold text-white tracking-tight">Monte Aneto</h3>
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+</div>
+<div class="flex items-center gap-2 mt-1">
+<span class="bg-primary/20 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full border border-primary/30">PIRINEOS</span>
+<span class="text-slate-400 text-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">straighten</span> 3.404m
+                                </span>
+</div>
+</div>
+<div class="flex items-center gap-4 text-xs text-slate-400">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-yellow-500">star</span>
+                                4.9 (1.2k)
+                            </div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">schedule</span>
+                                6h 30m
+                            </div>
+</div>
+</div>
+</div>
+<!-- Card Footer Actions -->
+<div class="mt-4 pt-4 border-t border-white/10 flex gap-3">
+<button class="flex-1 bg-primary hover:bg-primary/90 text-background-dark font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 group">
+                        Ver detalles
+                        <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+<button class="bg-background-dark border border-white/20 hover:border-primary/50 text-white p-3 rounded-xl transition-colors">
+<span class="material-symbols-outlined">directions</span>
+</button>
+</div>
+</div>
+<!-- Bottom Navigation Bar (Minimalist) -->
+<div class="mt-4 flex justify-between px-8 py-3 bg-background-dark/60 backdrop-blur-md rounded-full border border-white/5">
+<a class="text-primary flex flex-col items-center" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="text-[10px] font-medium mt-0.5">Mapa</span>
+</a>
+<a class="text-slate-500 hover:text-slate-300 flex flex-col items-center" href="#">
+<span class="material-symbols-outlined">show_chart</span>
+<span class="text-[10px] font-medium mt-0.5">Rutas</span>
+</a>
+<a class="text-slate-500 hover:text-slate-300 flex flex-col items-center" href="#">
+<span class="material-symbols-outlined">communities</span>
+<span class="text-[10px] font-medium mt-0.5">Social</span>
+</a>
+<a class="text-slate-500 hover:text-slate-300 flex flex-col items-center" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium mt-0.5">Perfil</span>
+</a>
+</div>
+</div>
+<!-- Scale / Zoom Info Overlay -->
+<div class="absolute left-4 bottom-24 z-20 pointer-events-none">
+<div class="bg-background-dark/40 backdrop-blur-sm px-2 py-1 rounded border border-white/5">
+<p class="text-[10px] text-slate-400 font-mono tracking-widest">42.6322° N, 0.6577° E</p>
+</div>
+</div>
+</div>
+</body></html>

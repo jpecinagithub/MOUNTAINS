@@ -1,311 +1,481 @@
-/* Reset básico y configuración global */
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap");
+
+/* Theme tokens aligned to Stitch (primary/backgrounds/typography). */
+:root {
+    color-scheme: light dark;
+
+    --primary: #11d411;
+    --bg: #f6f8f6;
+    --panel: rgba(255, 255, 255, 0.85);
+    --panel-solid: #ffffff;
+    --text: #0f172a;
+    --muted: rgba(15, 23, 42, 0.72);
+    --border: rgba(15, 23, 42, 0.12);
+    --shadow: 0 24px 50px rgba(2, 6, 23, 0.12);
+    --shadow-soft: 0 10px 30px rgba(2, 6, 23, 0.10);
+
+    --radius: 16px;
+    --radius-sm: 12px;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #102210;
+        --panel: rgba(16, 34, 16, 0.72);
+        --panel-solid: rgba(16, 34, 16, 0.92);
+        --text: #f1f5f9;
+        --muted: rgba(241, 245, 249, 0.70);
+        --border: rgba(255, 255, 255, 0.10);
+        --shadow: 0 30px 70px rgba(0, 0, 0, 0.40);
+        --shadow-soft: 0 14px 40px rgba(0, 0, 0, 0.30);
+    }
+}
+
+/* Reset */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+html,
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    height: 100%;
+}
+
+body {
+    font-family: "Space Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
     line-height: 1.5;
-    color: #1a1a1a;
-    background: #f8fafc;
+    color: var(--text);
+    background:
+        radial-gradient(1100px 600px at 10% 0%, rgba(17, 212, 17, 0.10), transparent 55%),
+        radial-gradient(900px 500px at 90% 10%, rgba(17, 212, 17, 0.08), transparent 60%),
+        var(--bg);
     min-height: 100vh;
     padding: 16px;
     overflow-x: hidden;
 }
 
-/* Contenedor principal */
+/* Container */
 .container {
     max-width: 1400px;
     margin: 0 auto;
-    background: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    background: linear-gradient(180deg, var(--panel) 0%, rgba(255, 255, 255, 0.65) 100%);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
     overflow: hidden;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border);
+    backdrop-filter: blur(18px);
+}
+
+@media (prefers-color-scheme: dark) {
+    .container {
+        background: linear-gradient(180deg, rgba(16, 34, 16, 0.78) 0%, rgba(16, 34, 16, 0.58) 100%);
+    }
 }
 
 /* Header */
 header {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    color: white;
-    padding: 32px;
+    color: #ffffff;
+    padding: 28px 28px 26px;
     text-align: center;
     position: relative;
     overflow: hidden;
+    background:
+        radial-gradient(900px 280px at 15% 0%, rgba(17, 212, 17, 0.35), rgba(17, 212, 17, 0.05) 55%, transparent 70%),
+        linear-gradient(180deg, rgba(16, 34, 16, 0.92) 0%, rgba(16, 34, 16, 0.80) 100%);
 }
 
 header::before {
-    content: '';
+    content: "";
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-    opacity: 0.3;
+    inset: 0;
+    background:
+        radial-gradient(rgba(17, 212, 17, 0.55) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.08;
+    pointer-events: none;
 }
 
 header h1 {
-    font-size: 2.25rem;
+    font-size: 2.1rem;
     font-weight: 700;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     position: relative;
     z-index: 1;
-    letter-spacing: -0.025em;
+    letter-spacing: -0.03em;
 }
 
 header p {
-    opacity: 0.8;
+    opacity: 0.88;
     font-size: 1rem;
     position: relative;
     z-index: 1;
-    font-weight: 400;
+    font-weight: 500;
+    color: rgba(241, 245, 249, 0.90);
 }
 
-/* Contenido principal */
+/* Main content */
 main {
-    padding: 32px;
+    padding: 26px;
 }
 
-/* Controles de ubicación */
+/* Location controls */
 .location-controls {
-    margin-bottom: 24px;
-    background: #f9fafb;
-    padding: 24px;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
+    margin-bottom: 18px;
+    background: rgba(16, 34, 16, 0.08);
+    padding: 18px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+}
+
+@media (prefers-color-scheme: dark) {
+    .location-controls {
+        background: rgba(16, 34, 16, 0.45);
+        backdrop-filter: blur(16px);
+        border-color: rgba(17, 212, 17, 0.22);
+    }
 }
 
 .control-group {
     display: flex;
     gap: 12px;
     justify-content: center;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 
 .control-btn {
-    padding: 12px 24px;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: #374151;
-    background: #ffffff;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
+    padding: 12px 18px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text);
+    background: var(--panel-solid);
+    border: 1px solid var(--border);
+    border-radius: 14px;
     cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    transition: transform 0.12s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
+    box-shadow: var(--shadow-soft);
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    letter-spacing: -0.01em;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    min-height: 46px;
+}
+
+/* Emphasize primary action (matches Stitch: primary green). */
+#myLocationBtn {
+    background: var(--primary);
+    color: #102210;
+    border-color: rgba(17, 212, 17, 0.45);
+    box-shadow: 0 16px 30px rgba(17, 212, 17, 0.18);
 }
 
 .control-btn:hover {
-    background: #f9fafb;
-    border-color: #9ca3af;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border-color: rgba(17, 212, 17, 0.50);
+    box-shadow: 0 18px 40px rgba(2, 6, 23, 0.15);
+}
+
+#myLocationBtn:hover {
+    background: rgba(17, 212, 17, 0.92);
+    box-shadow: 0 18px 40px rgba(17, 212, 17, 0.20);
 }
 
 .control-btn:active {
-    background: #f3f4f6;
-    transform: translateY(1px);
+    transform: scale(0.98);
 }
 
 .control-btn:disabled {
-    opacity: 0.5;
+    opacity: 0.55;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
 }
 
-/* Buscador de ubicaciones */
+.control-btn svg {
+    opacity: 0.95;
+}
+
+/* Search */
 .location-search {
     display: flex;
     gap: 12px;
-    max-width: 600px;
+    max-width: 740px;
     margin: 0 auto;
     padding: 0;
     background: transparent;
-    border-radius: 0;
-    box-shadow: none;
 }
 
 .location-search input {
     flex: 1;
-    padding: 12px 16px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    font-size: 0.875rem;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    font-size: 0.95rem;
     outline: none;
-    transition: all 0.2s ease;
-    background: #ffffff;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+    background: rgba(255, 255, 255, 0.70);
+    color: var(--text);
+}
+
+@media (prefers-color-scheme: dark) {
+    .location-search input {
+        background: rgba(16, 34, 16, 0.60);
+        border-color: rgba(255, 255, 255, 0.12);
+    }
+}
+
+.location-search input::placeholder {
+    color: rgba(100, 116, 139, 0.85);
+}
+
+@media (prefers-color-scheme: dark) {
+    .location-search input::placeholder {
+        color: rgba(241, 245, 249, 0.55);
+    }
 }
 
 .location-search input:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: rgba(17, 212, 17, 0.65);
+    box-shadow: 0 0 0 4px rgba(17, 212, 17, 0.16);
 }
 
 .location-search button {
-    padding: 12px 20px;
-    background: #3b82f6;
-    color: white;
-    border: none;
-    border-radius: 8px;
+    padding: 12px 16px;
+    background: rgba(16, 34, 16, 0.92);
+    color: rgba(241, 245, 249, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 14px;
     cursor: pointer;
-    font-weight: 600;
-    font-size: 0.875rem;
-    transition: all 0.2s ease;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    font-weight: 800;
+    font-size: 0.9rem;
+    transition: transform 0.12s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 16px 30px rgba(2, 6, 23, 0.18);
+    min-height: 46px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
 }
 
 .location-search button:hover {
-    background: #2563eb;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border-color: rgba(17, 212, 17, 0.35);
+    box-shadow: 0 18px 40px rgba(2, 6, 23, 0.22);
 }
 
-/* Contenedor principal */
+.location-search button:active {
+    transform: scale(0.98);
+}
+
+/* Layout */
 .main-content {
     display: grid;
-    grid-template-columns: 1fr 400px;
-    gap: 24px;
-    margin-top: 24px;
+    grid-template-columns: 1fr 420px;
+    gap: 18px;
+    margin-top: 18px;
 }
 
-/* Sección del mapa */
 .map-section {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
 }
 
-/* Contenedor del mapa */
 .map-container {
-    height: 500px;
-    border-radius: 12px;
+    height: 520px;
+    border-radius: var(--radius);
     overflow: hidden;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    border: 1px solid #e5e7eb;
+    box-shadow: var(--shadow-soft);
+    border: 1px solid var(--border);
     position: relative;
 }
 
-/* Sección de resultados */
+/* Results panel */
 .results-section {
-    background: #f9fafb;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
+    background: rgba(16, 34, 16, 0.06);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
     overflow: hidden;
+}
+
+@media (prefers-color-scheme: dark) {
+    .results-section {
+        background: rgba(16, 34, 16, 0.50);
+        border-color: rgba(17, 212, 17, 0.18);
+        backdrop-filter: blur(16px);
+    }
 }
 
 .results-section .mountains-container {
     margin: 0;
-    padding: 24px;
+    padding: 18px;
 }
 
 .results-section .mountains-list {
-    max-height: 500px;
+    max-height: 520px;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
-    scrollbar-color: #9ca3af #f3f4f6;
+    scrollbar-color: rgba(17, 212, 17, 0.55) rgba(2, 6, 23, 0.08);
 }
 
 .results-section .mountains-list::-webkit-scrollbar {
-    width: 6px;
+    width: 8px;
 }
 
 .results-section .mountains-list::-webkit-scrollbar-track {
-    background: #f3f4f6;
-    border-radius: 3px;
+    background: rgba(2, 6, 23, 0.06);
+    border-radius: 9999px;
 }
 
 .results-section .mountains-list::-webkit-scrollbar-thumb {
-    background: #9ca3af;
-    border-radius: 3px;
+    background: rgba(17, 212, 17, 0.45);
+    border-radius: 9999px;
 }
 
-/* Estado de carga */
+/* Status */
 .status {
     text-align: center;
-    padding: 16px 24px;
-    margin: 16px 0;
-    background: #eff6ff;
-    border-radius: 8px;
-    border: 1px solid #bfdbfe;
-    color: #1e40af;
-    font-size: 0.875rem;
-    font-weight: 500;
+    padding: 12px 14px;
+    margin: 14px 0;
+    background: rgba(17, 212, 17, 0.10);
+    border-radius: 14px;
+    border: 1px solid rgba(17, 212, 17, 0.20);
+    color: var(--text);
+    font-size: 0.9rem;
+    font-weight: 700;
 }
 
-/* Información de ubicación */
+/* Location info */
 .location-info {
-    background: #ffffff;
-    padding: 20px;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    background: var(--panel-solid);
+    padding: 16px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-soft);
+}
+
+@media (prefers-color-scheme: dark) {
+    .location-info {
+        background: rgba(16, 34, 16, 0.70);
+        border-color: rgba(255, 255, 255, 0.10);
+        backdrop-filter: blur(14px);
+    }
 }
 
 .location-info h3 {
-    color: #111827;
-    margin-bottom: 12px;
+    color: var(--text);
+    margin-bottom: 10px;
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 800;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    letter-spacing: -0.01em;
+}
+
+.location-info h3 svg {
+    color: var(--primary);
 }
 
 .location-info p {
-    color: #6b7280;
+    color: var(--muted);
     margin: 6px 0;
-    font-size: 0.875rem;
-    line-height: 1.4;
+    font-size: 0.9rem;
+    line-height: 1.45;
 }
 
-/* Contenedor de montañas */
+/* Mountains list */
 .mountains-container h3 {
-    color: #111827;
-    margin-bottom: 16px;
-    font-size: 1.125rem;
-    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 14px;
+    font-size: 1.05rem;
+    font-weight: 900;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    letter-spacing: -0.01em;
 }
 
-/* Lista de montañas */
 .mountains-list {
     display: grid;
     gap: 12px;
 }
 
-/* Tarjeta de montaña */
 .mountain-card {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 16px;
-    transition: all 0.2s ease;
+    background: var(--panel-solid);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    transition: transform 0.12s ease, box-shadow 0.15s ease, border-color 0.15s ease;
     cursor: pointer;
-    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.1);
+    -webkit-tap-highlight-color: rgba(17, 212, 17, 0.14);
     touch-action: manipulation;
+    box-shadow: 0 10px 20px rgba(2, 6, 23, 0.08);
+}
+
+.mountain-actions {
+    margin-top: 12px;
+    display: flex;
+    gap: 10px;
+}
+
+.detail-btn {
+    flex: 1;
+    border-radius: 14px;
+    padding: 10px 12px;
+    font-weight: 900;
+    cursor: pointer;
+    border: 1px solid rgba(17, 212, 17, 0.35);
+    background: var(--primary);
+    color: #102210;
+    transition: transform 0.12s ease, filter 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    box-shadow: 0 14px 28px rgba(17, 212, 17, 0.14);
+}
+
+.detail-btn:hover {
+    filter: brightness(0.98);
+    box-shadow: 0 18px 36px rgba(17, 212, 17, 0.18);
+    border-color: rgba(17, 212, 17, 0.55);
+}
+
+.detail-btn:active {
+    transform: scale(0.98);
+}
+
+.detail-btn--secondary {
+    background: rgba(16, 34, 16, 0.92);
+    color: rgba(241, 245, 249, 0.95);
+    border-color: rgba(255, 255, 255, 0.10);
+    box-shadow: 0 16px 30px rgba(2, 6, 23, 0.18);
+}
+
+.detail-btn--secondary:hover {
+    border-color: rgba(17, 212, 17, 0.30);
+    box-shadow: 0 18px 40px rgba(2, 6, 23, 0.22);
+}
+
+@media (prefers-color-scheme: dark) {
+    .mountain-card {
+        background: rgba(16, 34, 16, 0.68);
+        border-color: rgba(255, 255, 255, 0.10);
+    }
 }
 
 .mountain-card:hover {
-    border-color: #3b82f6;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border-color: rgba(17, 212, 17, 0.55);
+    box-shadow: 0 18px 40px rgba(2, 6, 23, 0.18);
     transform: translateY(-1px);
 }
 
 .mountain-name {
     font-size: 1rem;
-    font-weight: 600;
-    color: #111827;
-    margin-bottom: 12px;
+    font-weight: 900;
+    color: var(--text);
+    margin-bottom: 10px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    letter-spacing: -0.02em;
 }
 
 .mountain-details {
@@ -316,9 +486,9 @@ main {
 .detail-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    color: #6b7280;
-    font-size: 0.875rem;
+    gap: 10px;
+    color: var(--muted);
+    font-size: 0.9rem;
 }
 
 .detail-item .icon {
@@ -328,48 +498,73 @@ main {
     align-items: center;
     justify-content: center;
     font-size: 12px;
+    color: rgba(17, 212, 17, 0.85);
 }
 
 .detail-item strong {
-    color: #374151;
-    font-weight: 500;
+    color: var(--text);
+    font-weight: 800;
 }
 
 .elevation {
-    color: #059669;
-    font-weight: 600;
+    color: rgba(17, 212, 17, 0.95);
+    font-weight: 900;
 }
 
 .distance {
-    color: #0891b2;
-    font-weight: 600;
+    color: rgba(16, 34, 16, 0.95);
+    font-weight: 900;
 }
 
-/* Mensaje de error */
+@media (prefers-color-scheme: dark) {
+    .distance {
+        color: rgba(241, 245, 249, 0.90);
+    }
+}
+
+/* Error message */
 .error-message {
-    background: #fef2f2;
-    color: #991b1b;
-    padding: 16px 20px;
-    border-radius: 8px;
-    border: 1px solid #fecaca;
-    margin: 16px 0;
-    font-size: 0.875rem;
-    font-weight: 500;
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--text);
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(239, 68, 68, 0.22);
+    margin: 14px 0;
+    font-size: 0.9rem;
+    font-weight: 700;
 }
 
 /* Footer */
 footer {
-    background: #f9fafb;
-    padding: 20px;
+    background: rgba(16, 34, 16, 0.04);
+    padding: 18px;
     text-align: center;
-    color: #6b7280;
-    font-size: 0.875rem;
-    border-top: 1px solid #e5e7eb;
+    color: var(--muted);
+    font-size: 0.9rem;
+    border-top: 1px solid var(--border);
 }
 
-/* Clases de utilidad */
+@media (prefers-color-scheme: dark) {
+    footer {
+        background: rgba(16, 34, 16, 0.50);
+        border-top-color: rgba(255, 255, 255, 0.08);
+    }
+}
+
+/* Utilities */
 .hidden {
     display: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar,
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+.hide-scrollbar,
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
 .loading {
@@ -377,7 +572,7 @@ footer {
 }
 
 .loading::after {
-    content: '';
+    content: "";
     position: absolute;
     right: 12px;
     top: 50%;
@@ -391,11 +586,15 @@ footer {
 }
 
 @keyframes spin {
-    0% { transform: translateY(-50%) rotate(0deg); }
-    100% { transform: translateY(-50%) rotate(360deg); }
+    0% {
+        transform: translateY(-50%) rotate(0deg);
+    }
+    100% {
+        transform: translateY(-50%) rotate(360deg);
+    }
 }
 
-/* Estilos específicos para el mapa */
+/* Leaflet popup */
 .leaflet-popup-content {
     font-family: inherit;
     line-height: 1.4;
@@ -404,279 +603,152 @@ footer {
 .mountain-popup {
     text-align: left;
     min-width: 200px;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
 }
 
 .mountain-popup h4 {
-    color: #111827;
+    color: #0f172a;
     margin-bottom: 8px;
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 900;
 }
 
 .mountain-popup p {
     margin: 4px 0;
-    color: #6b7280;
-    font-size: 0.875rem;
+    color: rgba(15, 23, 42, 0.72);
+    font-size: 0.9rem;
 }
 
 .mountain-popup .elevation {
-    color: #059669;
-    font-weight: 600;
+    color: rgba(17, 212, 17, 0.95);
+    font-weight: 900;
 }
 
-/* Mejoras para interacción táctil */
-.control-btn, .location-search button {
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-    min-height: 44px;
+@media (prefers-color-scheme: dark) {
+    .mountain-popup h4 {
+        color: #0f172a;
+    }
 }
 
-/* Responsive Design - Laptops grandes */
+/* Responsive */
 @media (min-width: 1400px) {
     .container {
         max-width: 1600px;
     }
-    
+
     .main-content {
-        grid-template-columns: 1fr 450px;
-        gap: 32px;
+        grid-template-columns: 1fr 460px;
+        gap: 22px;
     }
-    
+
     .map-container {
         height: 600px;
     }
-    
+
     .results-section .mountains-list {
         max-height: 600px;
     }
 }
 
-/* Laptops medianos */
 @media (max-width: 1200px) {
     .main-content {
-        grid-template-columns: 1fr 350px;
-        gap: 24px;
+        grid-template-columns: 1fr 360px;
+        gap: 18px;
     }
-    
+
     .map-container {
-        height: 450px;
+        height: 480px;
     }
 }
 
-/* Laptops pequeños y tablets horizontales */
 @media (max-width: 1024px) {
     .container {
         max-width: 100%;
-        margin: 0 8px;
-    }
-    
-    .main-content {
-        grid-template-columns: 1fr 320px;
-        gap: 20px;
-    }
-    
-    .map-container {
-        height: 400px;
-    }
-    
-    header h1 {
-        font-size: 2rem;
-    }
-    
-    main {
-        padding: 24px;
-    }
-}
-
-/* Tablets verticales */
-@media (max-width: 968px) {
-    .main-content {
-        grid-template-columns: 1fr;
-        gap: 24px;
-    }
-    
-    .map-container {
-        height: 400px;
-    }
-    
-    .results-section .mountains-list {
-        max-height: none;
-        overflow-y: visible;
-    }
-    
-    .results-section {
-        background: transparent;
-        border: none;
-        padding: 0;
-    }
-    
-    .results-section .mountains-container {
-        background: #f9fafb;
-        border-radius: 12px;
-        border: 1px solid #e5e7eb;
-    }
-}
-
-/* Móviles grandes */
-@media (max-width: 768px) {
-    body {
-        padding: 8px;
-    }
-    
-    .container {
-        border-radius: 12px;
         margin: 0;
     }
-    
-    header {
-        padding: 24px 20px;
-    }
-    
-    header h1 {
-        font-size: 1.875rem;
-    }
-    
+
     main {
-        padding: 20px 16px;
+        padding: 18px;
     }
-    
+
+    header h1 {
+        font-size: 1.9rem;
+    }
+
+    .main-content {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .results-section .mountains-list {
+        max-height: none;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    header {
+        padding: 22px 18px 20px;
+    }
+
+    main {
+        padding: 16px;
+    }
+
     .location-controls {
-        padding: 20px;
+        padding: 14px;
     }
-    
+
     .control-group {
         flex-direction: column;
         align-items: stretch;
-        gap: 12px;
+        gap: 10px;
     }
-    
+
     .control-btn {
         width: 100%;
         justify-content: center;
         min-height: 48px;
     }
-    
+
     .location-search {
         flex-direction: column;
-        gap: 12px;
+        gap: 10px;
         max-width: none;
     }
-    
+
     .location-search input {
-        font-size: 16px; /* Evita zoom en iOS */
+        font-size: 16px; /* iOS zoom guard */
         min-height: 48px;
     }
-    
+
     .location-search button {
         width: 100%;
         min-height: 48px;
     }
-    
+
     .map-container {
-        height: 350px;
-    }
-    
-    .mountain-details {
-        gap: 6px;
-    }
-    
-    .location-info {
-        padding: 16px;
+        height: 380px;
     }
 }
 
-/* Móviles medianos */
 @media (max-width: 480px) {
     body {
-        padding: 4px;
+        padding: 8px;
     }
-    
-    header {
-        padding: 20px 16px;
-    }
-    
-    header h1 {
-        font-size: 1.75rem;
-    }
-    
-    main {
-        padding: 16px 12px;
-    }
-    
-    .location-controls {
-        padding: 16px;
-    }
-    
-    .control-btn {
-        font-size: 0.875rem;
-        padding: 12px 20px;
-        min-height: 44px;
-    }
-    
-    .map-container {
-        height: 300px;
-    }
-    
-    .mountain-card {
-        padding: 14px;
-    }
-    
-    .results-section .mountains-container {
-        padding: 20px;
-    }
-}
 
-/* Móviles muy pequeños */
-@media (max-width: 360px) {
     header h1 {
-        font-size: 1.5rem;
+        font-size: 1.7rem;
     }
-    
+
     .map-container {
-        height: 280px;
+        height: 320px;
     }
-    
+
     .mountain-card {
         padding: 12px;
-    }
-    
-    .mountain-name {
-        font-size: 0.9rem;
-    }
-    
-    .detail-item {
-        font-size: 0.8rem;
-    }
-}
-
-/* Mejoras para modo landscape en móviles */
-@media (max-height: 500px) and (orientation: landscape) {
-    .map-container {
-        height: 250px;
-    }
-    
-    header {
-        padding: 16px 20px;
-    }
-    
-    header h1 {
-        font-size: 1.5rem;
-        margin-bottom: 4px;
-    }
-    
-    main {
-        padding: 16px 20px;
-    }
-    
-    .location-controls {
-        padding: 16px;
-    }
-}
-
-/* Mejoras para pantallas de alta densidad */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-    .mountain-card, .location-info, .results-section {
-        border-width: 0.5px;
     }
 }

@@ -22,6 +22,7 @@ class MountainFinderWithMap {
         this.userMarker = null;
         this.mountainMarkers = [];
         this.currentLocation = null;
+        this.lastMountains = [];
         
         // Configuración de la búsqueda
         this.searchRadius = 50000; // Radio de búsqueda en metros (50km)
@@ -48,6 +49,12 @@ class MountainFinderWithMap {
         if (!navigator.geolocation) {
             this.showError('Your browser does not support geolocation');
         }
+
+        // Restore previous search (if any) so Back from details doesn't reset the app.
+        if (!this.restoreSearchState()) {
+            // Mostrar mensaje inicial
+            this.showLocationInfo('Click on the map to select a location', 'Or use the buttons to search for a specific place');
+        }
     }
 
     // Inicializar el mapa con Leaflet
@@ -65,9 +72,81 @@ class MountainFinderWithMap {
         this.map.on('click', (e) => {
             this.selectLocation(e.latlng.lat, e.latlng.lng);
         });
-        
-        // Mostrar mensaje inicial
-        this.showLocationInfo('Click on the map to select a location', 'Or use the buttons to search for a specific place');
+    }
+
+    persistSearchState() {
+        try {
+            const state = {
+                v: 1,
+                ts: Date.now(),
+                currentLocation: this.currentLocation,
+                mapView: this.map ? { center: this.map.getCenter(), zoom: this.map.getZoom() } : null,
+                mountains: this.lastMountains || [],
+                ui: {
+                    locationSearchHidden: this.locationSearch.classList.contains('hidden'),
+                    addressText: this.address?.textContent || '',
+                    coordinatesText: this.coordinates?.textContent || ''
+                }
+            };
+            sessionStorage.setItem('mountainExplorer:state', JSON.stringify(state));
+        } catch {
+            // ignore storage failures
+        }
+    }
+
+    restoreSearchState() {
+        let raw = null;
+        try {
+            raw = sessionStorage.getItem('mountainExplorer:state');
+        } catch {
+            raw = null;
+        }
+        if (!raw) return false;
+
+        let state = null;
+        try {
+            state = JSON.parse(raw);
+        } catch {
+            return false;
+        }
+        if (!state || state.v !== 1) return false;
+
+        // Don't restore very old sessions (avoids weird stale UI).
+        const maxAgeMs = 2 * 60 * 60 * 1000; // 2h
+        if (typeof state.ts === 'number' && Date.now() - state.ts > maxAgeMs) return false;
+
+        const loc = state.currentLocation;
+        if (!loc || typeof loc.lat !== 'number' || typeof loc.lon !== 'number') return false;
+
+        this.currentLocation = { lat: loc.lat, lon: loc.lon };
+        this.lastMountains = Array.isArray(state.mountains) ? state.mountains : [];
+
+        // Restore UI bits
+        if (state.ui && typeof state.ui.locationSearchHidden === 'boolean') {
+            this.locationSearch.classList.toggle('hidden', state.ui.locationSearchHidden);
+        }
+        if (state.ui?.coordinatesText) this.coordinates.textContent = state.ui.coordinatesText;
+        else this.coordinates.textContent = `${loc.lat.toFixed(6)}, ${loc.lon.toFixed(6)}`;
+        if (state.ui?.addressText) this.address.textContent = state.ui.addressText;
+
+        this.locationInfo.classList.remove('hidden');
+
+        // Restore marker + map view + results
+        this.updateLocationMarker(loc.lat, loc.lon, false);
+        if (state.mapView?.center && typeof state.mapView.zoom === 'number') {
+            this.map.setView([state.mapView.center.lat, state.mapView.center.lng], state.mapView.zoom);
+        } else {
+            this.map.setView([loc.lat, loc.lon], 10);
+        }
+
+        if (this.lastMountains.length > 0) {
+            this.displayMountainsOnMap(this.lastMountains);
+            this.displayMountainsList(this.lastMountains);
+            this.status.classList.add('hidden');
+            this.errorMessage.classList.add('hidden');
+        }
+
+        return true;
     }
 
     // Alternar visibilidad del buscador de ubicaciones
@@ -76,6 +155,7 @@ class MountainFinderWithMap {
         if (!this.locationSearch.classList.contains('hidden')) {
             this.locationInput.focus();
         }
+        this.persistSearchState();
     }
 
     // Usar ubicación actual del usuario
@@ -171,6 +251,7 @@ class MountainFinderWithMap {
             // Buscar montañas cercanas
             this.showStatus('Searching for nearby mountains...');
             const mountains = await this.searchNearbyMountains(lat, lon);
+            this.lastMountains = mountains;
             
             // Mostrar montañas en el mapa y en la lista
             this.displayMountainsOnMap(mountains);
@@ -182,6 +263,8 @@ class MountainFinderWithMap {
             } else {
                 this.showStatus('No mountains found in the nearby area');
             }
+
+            this.persistSearchState();
             
         } catch (error) {
             console.error('Error:', error);
@@ -267,6 +350,7 @@ class MountainFinderWithMap {
             // Construir dirección legible
             const address = this.formatAddress(data.address);
             this.address.textContent = address;
+            this.persistSearchState();
             
         } catch (error) {
             console.error('Error getting address:', error);
@@ -352,7 +436,10 @@ class MountainFinderWithMap {
                 lon: element.lon,
                 elevation: element.tags?.ele ? parseInt(element.tags.ele) : null,
                 type: element.tags?.natural || 'peak',
-                distance: this.calculateDistance(userLat, userLon, element.lat, element.lon)
+                distance: this.calculateDistance(userLat, userLon, element.lat, element.lon),
+                // Optional enrichment for the details page
+                wikipedia: element.tags?.wikipedia || null,
+                wikidata: element.tags?.wikidata || null
             };
             
             // Solo incluir montañas con nombre o elevación conocida
@@ -366,6 +453,7 @@ class MountainFinderWithMap {
 
     // Mostrar montañas en el mapa
     displayMountainsOnMap(mountains) {
+        this.lastMountains = mountains;
         // Limpiar marcadores anteriores
         this.mountainMarkers.forEach(marker => {
             this.map.removeLayer(marker);
@@ -404,6 +492,11 @@ class MountainFinderWithMap {
                     ${mountain.elevation ? `<p><strong>Elevation:</strong> <span class="elevation">${mountain.elevation.toLocaleString()} m</span></p>` : ''}
                     <p><strong>Distance:</strong> ${mountain.distance} km</p>
                     <p><strong>Coordinates:</strong> ${mountain.lat.toFixed(4)}, ${mountain.lon.toFixed(4)}</p>
+                    <p style="margin-top: 8px;">
+                        <a href="mountain.html?id=${encodeURIComponent(mountain.id)}&name=${encodeURIComponent(mountain.name)}&lat=${encodeURIComponent(mountain.lat)}&lon=${encodeURIComponent(mountain.lon)}&ele=${encodeURIComponent(mountain.elevation ?? '')}&type=${encodeURIComponent(mountain.type)}">
+                            View details
+                        </a>
+                    </p>
                 </div>
             `;
             
@@ -423,6 +516,7 @@ class MountainFinderWithMap {
 
     // Mostrar lista de montañas
     displayMountainsList(mountains) {
+        this.lastMountains = mountains;
         this.mountainsList.innerHTML = '';
         
         if (mountains.length === 0) {
@@ -490,22 +584,62 @@ class MountainFinderWithMap {
                     <span><strong>Coordinates:</strong> ${mountain.lat.toFixed(4)}, ${mountain.lon.toFixed(4)}</span>
                 </div>
             </div>
+            <div class="mountain-actions">
+                <button type="button" class="detail-btn" data-action="details">Ver detalles</button>
+                <button type="button" class="detail-btn detail-btn--secondary" data-action="focus">En mapa</button>
+            </div>
         `;
         
-        // Agregar evento para centrar mapa en la montaña al hacer clic
-        card.addEventListener('click', () => {
-            this.map.setView([mountain.lat, mountain.lon], 14);
-            // Encontrar y abrir el popup correspondiente
-            const marker = this.mountainMarkers.find(m => 
-                Math.abs(m.getLatLng().lat - mountain.lat) < 0.0001 && 
-                Math.abs(m.getLatLng().lng - mountain.lon) < 0.0001
-            );
-            if (marker) {
-                marker.openPopup();
+        // Event delegation for actions (details vs map focus).
+        card.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-action]');
+            const action = btn?.getAttribute('data-action');
+            if (action === 'details') {
+                e.preventDefault();
+                this.openMountainDetails(mountain);
+                return;
             }
+            if (action === 'focus') {
+                e.preventDefault();
+                this.focusMountainOnMap(mountain);
+                return;
+            }
+            // Default: focus on map (keeps old behavior).
+            this.focusMountainOnMap(mountain);
         });
         
         return card;
+    }
+
+    focusMountainOnMap(mountain) {
+        this.map.setView([mountain.lat, mountain.lon], 14);
+        const marker = this.mountainMarkers.find(m =>
+            Math.abs(m.getLatLng().lat - mountain.lat) < 0.0001 &&
+            Math.abs(m.getLatLng().lng - mountain.lon) < 0.0001
+        );
+        if (marker) marker.openPopup();
+    }
+
+    openMountainDetails(mountain) {
+        // Persist the whole search state so Back keeps the same results.
+        this.persistSearchState();
+
+        // Store richer data for the details page (query params are kept minimal).
+        try {
+            sessionStorage.setItem(`mountain:${mountain.id}`, JSON.stringify(mountain));
+        } catch {
+            // ignore storage failures
+        }
+
+        const params = new URLSearchParams();
+        params.set('id', String(mountain.id));
+        params.set('name', mountain.name);
+        params.set('lat', String(mountain.lat));
+        params.set('lon', String(mountain.lon));
+        if (mountain.elevation !== null && mountain.elevation !== undefined) params.set('ele', String(mountain.elevation));
+        params.set('type', mountain.type);
+
+        window.location.href = `mountain.html?${params.toString()}`;
     }
 
     // Calcular distancia entre dos puntos usando fórmula de Haversine
