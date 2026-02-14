@@ -27,6 +27,13 @@ class MountainFinderWithMap {
         // Configuración de la búsqueda
         this.searchRadius = 50000; // Radio de búsqueda en metros (50km)
         this.maxResults = 30; // Máximo número de montañas a mostrar
+
+        // Overpass endpoints are often rate-limited or temporarily down; we rotate on failure.
+        this.overpassEndpoints = [
+            'https://overpass-api.de/api/interpreter',
+            'https://overpass.kumi.systems/api/interpreter',
+            'https://overpass.nchc.org.tw/api/interpreter'
+        ];
         
         // Inicializar la aplicación
         this.init();
@@ -390,20 +397,8 @@ class MountainFinderWithMap {
                 );
                 out geom;
             `;
-            
-            const response = await fetch('https://overpass-api.de/api/interpreter', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `data=${encodeURIComponent(query)}`
-            });
-            
-            if (!response.ok) {
-                throw new Error('Error querying mountain database');
-            }
-            
-            const data = await response.json();
+
+            const data = await this.fetchOverpassJson(query);
             
             // Procesar y filtrar resultados
             const mountains = this.processMountainData(data.elements, lat, lon);
@@ -416,8 +411,58 @@ class MountainFinderWithMap {
             
         } catch (error) {
             console.error('Error searching mountains:', error);
-            throw new Error('Error searching mountain database');
+            // Surface a more actionable message to the user.
+            const msg = (error && error.message) ? error.message : 'Unknown error';
+            throw new Error(`Error searching mountain database: ${msg}`);
         }
+    }
+
+    async fetchWithTimeout(url, options = {}, timeoutMs = 25000) {
+        const controller = new AbortController();
+        const t = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            return await fetch(url, { ...options, signal: controller.signal });
+        } finally {
+            clearTimeout(t);
+        }
+    }
+
+    async fetchOverpassJson(query) {
+        const body = `data=${encodeURIComponent(query)}`;
+        let lastErr = null;
+
+        for (const endpoint of this.overpassEndpoints) {
+            try {
+                const response = await this.fetchWithTimeout(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body
+                }, 30000);
+
+                if (!response.ok) {
+                    // Overpass frequently returns 429/504 when busy.
+                    const status = response.status;
+                    const hint =
+                        status === 429 ? 'Rate limited (429). Try again in a minute.' :
+                        status === 504 ? 'Gateway timeout (504). Server is busy.' :
+                        status === 400 ? 'Bad request (400).' :
+                        `HTTP ${status}.`;
+                    throw new Error(`Overpass failed at ${endpoint} (${hint})`);
+                }
+
+                const data = await response.json();
+                if (!data || !Array.isArray(data.elements)) {
+                    throw new Error(`Overpass returned unexpected response at ${endpoint}`);
+                }
+                return data;
+            } catch (err) {
+                lastErr = err;
+                // Try next endpoint
+            }
+        }
+
+        const msg = lastErr?.message || 'Overpass request failed.';
+        throw new Error(msg);
     }
 
     // Procesar datos de montañas obtenidos de la API

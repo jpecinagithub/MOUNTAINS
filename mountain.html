@@ -15,6 +15,8 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700&display=swap" rel="stylesheet">
+    <!-- Optional (gitignored): defines window.GOOGLE_MAPS_API_KEY -->
+    <script src="config.js"></script>
     <script>
         // Keep theme aligned with the rest of the app (prefers-color-scheme).
         (function () {
@@ -69,52 +71,54 @@
             </button>
         </div>
 
-        <!-- Hero -->
-        <div class="relative w-full h-80 overflow-hidden">
+        <!-- Hero + Stats (top of page) -->
+        <div class="relative w-full h-[420px] overflow-hidden">
             <div class="absolute inset-0 hero-gradient z-10"></div>
             <img id="heroImg" alt="Imagen de la montaña" class="w-full h-full object-cover" src="icon-512x512.png">
-            <div class="absolute bottom-0 left-0 p-6 z-20">
-                <div class="flex items-center gap-2 mb-1">
-                    <span id="locationTag" class="bg-primary/20 text-primary text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded border border-primary/30">Ubicación</span>
-                </div>
-                <h1 id="mountainName" class="text-4xl font-bold text-white tracking-tight">Montaña</h1>
-            </div>
-        </div>
 
-        <!-- Stats -->
-        <div class="px-4 -mt-4 relative z-30">
-            <div class="grid grid-cols-3 gap-3">
-                <div class="bg-white dark:bg-emerald-950/20 border border-slate-200 dark:border-primary/20 rounded-xl p-4 flex flex-col items-center justify-center text-center shadow-sm">
-                    <span class="material-symbols-outlined text-primary mb-1">filter_hdr</span>
-                    <span class="text-[10px] uppercase font-bold text-slate-500 dark:text-primary/60 tracking-tighter">Altitud</span>
-                    <span id="statAltitude" class="text-lg font-bold">-</span>
+            <div class="absolute bottom-0 left-0 right-0 z-20 p-6">
+                <div class="flex items-center gap-2 mb-2">
+                    <span id="locationTag" class="bg-primary/20 text-primary text-[11px] font-extrabold uppercase tracking-widest px-3 py-1 rounded border border-primary/30">
+                        Ubicación
+                    </span>
                 </div>
-                <div class="bg-white dark:bg-emerald-950/20 border border-slate-200 dark:border-primary/20 rounded-xl p-4 flex flex-col items-center justify-center text-center shadow-sm">
-                    <span class="material-symbols-outlined text-primary mb-1">public</span>
-                    <span class="text-[10px] uppercase font-bold text-slate-500 dark:text-primary/60 tracking-tighter">Ubicación</span>
-                    <span id="statPlace" class="text-xs font-bold leading-tight">-</span>
-                </div>
-                <div class="bg-white dark:bg-emerald-950/20 border border-slate-200 dark:border-primary/20 rounded-xl p-4 flex flex-col items-center justify-center text-center shadow-sm">
-                    <span class="material-symbols-outlined text-primary mb-1">explore</span>
-                    <span class="text-[10px] uppercase font-bold text-slate-500 dark:text-primary/60 tracking-tighter">Coords</span>
-                    <span id="statCoords" class="text-xs font-bold leading-tight">-</span>
+
+                <h1 id="mountainName" class="text-5xl font-extrabold text-white tracking-tight leading-none">
+                    Montaña
+                </h1>
+
+                <div class="mt-5 grid grid-cols-3 gap-4">
+                    <div class="bg-background-dark/55 backdrop-blur-xl border border-primary/30 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-2xl shadow-black/30">
+                        <span class="material-symbols-outlined text-primary mb-1 text-3xl">filter_hdr</span>
+                        <span class="text-[10px] uppercase font-extrabold text-primary/70 tracking-widest">Altitud</span>
+                        <span id="statAltitude" class="text-xl font-extrabold text-white mt-1">-</span>
+                    </div>
+                    <div class="bg-background-dark/55 backdrop-blur-xl border border-primary/30 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-2xl shadow-black/30">
+                        <span class="material-symbols-outlined text-primary mb-1 text-3xl">public</span>
+                        <span class="text-[10px] uppercase font-extrabold text-primary/70 tracking-widest">Ubicación</span>
+                        <span id="statPlace" class="text-xs font-extrabold text-white mt-1 leading-tight line-clamp-2">-</span>
+                    </div>
+                    <div class="bg-background-dark/55 backdrop-blur-xl border border-primary/30 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-2xl shadow-black/30">
+                        <span class="material-symbols-outlined text-primary mb-1 text-3xl">explore</span>
+                        <span class="text-[10px] uppercase font-extrabold text-primary/70 tracking-widest">Coords</span>
+                        <span id="statCoords" class="text-sm font-extrabold text-white mt-1 leading-tight">-</span>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Content -->
         <div class="px-6 py-8 space-y-8">
-            <section>
-                <h3 class="text-xl font-bold mb-3 flex items-center gap-2">
-                    <span class="w-1 h-6 bg-primary rounded-full"></span>
-                    Información
+            <section class="bg-white/70 dark:bg-emerald-950/20 border border-slate-200 dark:border-primary/20 rounded-xl p-5 shadow-sm">
+                <h3 class="text-lg font-bold mb-3 flex items-center gap-2 text-primary">
+                    <span class="material-symbols-outlined">360</span>
+                    Vista 360 (Street View)
                 </h3>
-                <div class="space-y-2 text-sm text-slate-700 dark:text-slate-300">
-                    <p><span class="text-slate-500 dark:text-slate-400">Nombre:</span> <span id="infoName" class="font-bold">-</span></p>
-                    <p><span class="text-slate-500 dark:text-slate-400">Tipo:</span> <span id="infoType" class="font-bold">-</span></p>
-                    <p><span class="text-slate-500 dark:text-slate-400">Altitud:</span> <span id="infoElevation" class="font-bold">-</span></p>
-                    <p><span class="text-slate-500 dark:text-slate-400">Coordenadas:</span> <span id="infoCoords" class="font-bold">-</span></p>
-                </div>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                    Si hay Street View cerca de estas coordenadas, puedes rotar la vista. Requiere Google API Key.
+                </p>
+                <div id="streetView360" class="flex gap-2 overflow-x-auto pb-1"></div>
+                <p id="streetViewHint" class="mt-2 text-xs text-slate-500 dark:text-slate-400"></p>
             </section>
 
             <section class="bg-primary/5 dark:bg-primary/10 border border-primary/20 rounded-xl p-5">
@@ -128,17 +132,20 @@
                 <p id="historySource" class="mt-3 text-xs text-slate-500 dark:text-slate-400"></p>
             </section>
 
-            <section>
-                <div class="relative w-full h-40 rounded-xl overflow-hidden grayscale contrast-125 brightness-75 border border-slate-200 dark:border-white/10">
-                    <img id="mapImg" alt="Mapa de la zona" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYP6BIekQjz5BVPszMG3TCbunN2k-vZdrlVyHEatLEmmXA9OW_LUakeBqLCw97TI9gavmeKUv0smvpayYN_79rObaZtBHej-V8odv2Hymr67DK8XJ6WIvUQIwXU_3QnGwVeGGblzNqiXjxf2A4XbwYvwaXwrAFApqDTHBSpFWM4gwPhFwqQMkH7heiGB2t0sZaWrnh5Un6fOXvfTPAGO-69rFw5A5YFTn8_kYyH2qnZVUm1BVjADWtHP7r0AqxBPpN3GeNRYaTs2c">
-                    <div class="absolute inset-0 flex items-center justify-center bg-black/20">
-                        <div class="bg-primary text-background-dark px-4 py-2 rounded-full font-bold text-xs flex items-center gap-2 shadow-lg">
-                            <span class="material-symbols-outlined text-sm">map</span>
-                            Vista general
-                        </div>
-                    </div>
+            <section class="bg-white/70 dark:bg-emerald-950/20 border border-slate-200 dark:border-primary/20 rounded-xl p-5 shadow-sm">
+                <h3 class="text-lg font-bold mb-3 flex items-center gap-2 text-primary">
+                    <span class="material-symbols-outlined">route</span>
+                    Rutas en Wikiloc
+                </h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                    Enlaces a busquedas de rutas cerca del pico (se abren en Wikiloc).
+                </p>
+                <div id="wikilocRoutes" class="space-y-2">
+                    <p class="text-sm text-slate-700 dark:text-slate-300">Cargando rutas...</p>
                 </div>
             </section>
+
+            <!-- Map section removed by request -->
         </div>
 
         <!-- Sticky Footer -->
@@ -158,4 +165,3 @@
     <script src="mountain-details.js"></script>
 </body>
 </html>
-

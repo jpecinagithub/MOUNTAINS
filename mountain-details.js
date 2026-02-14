@@ -101,6 +101,180 @@ function safeUrl(u) {
   }
 }
 
+function clamp(n, min, max) {
+  if (!Number.isFinite(n)) return n;
+  return Math.min(max, Math.max(min, n));
+}
+
+function buildWikilocMapUrl({ q, act, lat, lon, spanDeg = 0.25, page = 1 }) {
+  const base = "https://es.wikiloc.com/wikiloc/map.do";
+  const params = new URLSearchParams();
+
+  if (Number.isFinite(lat) && Number.isFinite(lon)) {
+    const swLat = clamp(lat - spanDeg, -89.999, 89.999);
+    const swLon = clamp(lon - spanDeg, -179.999, 179.999);
+    const neLat = clamp(lat + spanDeg, -89.999, 89.999);
+    const neLon = clamp(lon + spanDeg, -179.999, 179.999);
+    params.set("sw", `${swLat.toFixed(6)},${swLon.toFixed(6)}`);
+    params.set("ne", `${neLat.toFixed(6)},${neLon.toFixed(6)}`);
+  }
+
+  if (act) params.set("act", String(act));
+  if (q) params.set("q", q);
+  params.set("fitMapToTrails", "1");
+  params.set("page", String(page));
+
+  return `${base}?${params.toString()}`;
+}
+
+function getGoogleMapsKey() {
+  const k = (typeof window !== "undefined" && window.GOOGLE_MAPS_API_KEY) ? String(window.GOOGLE_MAPS_API_KEY).trim() : "";
+  return k || "";
+}
+
+function buildStreetViewMetadataUrl({ lat, lon, key, source, radius = 200 }) {
+  const u = new URL("https://maps.googleapis.com/maps/api/streetview/metadata");
+  u.searchParams.set("location", `${lat},${lon}`);
+  u.searchParams.set("radius", String(radius));
+  if (source) u.searchParams.set("source", source);
+  u.searchParams.set("key", key);
+  return u.toString();
+}
+
+function buildStreetViewStaticUrl({ lat, lon, key, pano, heading = 0, pitch = 0, fov = 90, size = "640x420", source = "outdoor" }) {
+  const u = new URL("https://maps.googleapis.com/maps/api/streetview");
+  if (pano) u.searchParams.set("pano", pano);
+  else u.searchParams.set("location", `${lat},${lon}`);
+  u.searchParams.set("size", size);
+  u.searchParams.set("fov", String(fov));
+  u.searchParams.set("heading", String(heading));
+  u.searchParams.set("pitch", String(pitch));
+  u.searchParams.set("source", source);
+  // If no pano is available, this makes errors explicit (instead of a generic image).
+  u.searchParams.set("return_error_code", "true");
+  u.searchParams.set("key", key);
+  return u.toString();
+}
+
+async function tryHydrateGoogleImages(mountain) {
+  const key = getGoogleMapsKey();
+  if (!key) {
+    const strip = qs("streetView360");
+    if (strip) strip.innerHTML = "";
+    setText("streetViewHint", "Configura tu Google API key en `config.js` (window.GOOGLE_MAPS_API_KEY) para activar Street View y el mapa estatico.");
+    return { used: false };
+  }
+
+  const lat = Number(mountain?.lat);
+  const lon = Number(mountain?.lon);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+    setText("streetViewHint", "Coordenadas no disponibles para pedir Street View.");
+    return { used: false };
+  }
+
+  // 1) Check Street View availability
+  let meta = null;
+  try {
+    // Mountains often have sparse coverage. Try outdoor first, then default, with a generous radius.
+    const metaUrls = [
+      buildStreetViewMetadataUrl({ lat, lon, key, source: "outdoor", radius: 2000 }),
+      buildStreetViewMetadataUrl({ lat, lon, key, source: "default", radius: 2000 }),
+      buildStreetViewMetadataUrl({ lat, lon, key, source: undefined, radius: 2000 })
+    ];
+
+    for (const metaUrl of metaUrls) {
+      const res = await fetch(metaUrl, { headers: { "Accept": "application/json" } });
+      if (!res.ok) continue;
+      const data = await res.json();
+      meta = data;
+      if (data && data.status === "OK") break;
+    }
+  } catch {
+    meta = null;
+  }
+
+  const hasStreetView = meta && meta.status === "OK";
+  const pano = hasStreetView ? meta.pano_id : null;
+  const svLat = hasStreetView && meta.location ? Number(meta.location.lat) : lat;
+  const svLon = hasStreetView && meta.location ? Number(meta.location.lng) : lon;
+
+  // Street View hero + 360 strip (only if available)
+  if (!hasStreetView) {
+    const status = meta?.status ? String(meta.status) : "ERROR";
+    const msg = meta?.error_message ? ` (${String(meta.error_message)})` : "";
+    setText(
+      "streetViewHint",
+      `Street View no disponible para estas coordenadas. Estado: ${status}${msg}. Esto es normal en picos remotos.`
+    );
+    return { used: true, streetView: false };
+  }
+
+  const headings = [0, 90, 180, 270];
+  const heroUrl = buildStreetViewStaticUrl({ lat: svLat, lon: svLon, key, pano, heading: 0, pitch: 0, fov: 90, size: "640x640" });
+  setImg("heroImg", heroUrl, `Street View: ${mountain.name}`);
+  setText("streetViewHint", "Street View cargado. Pulsa una miniatura para rotar la vista.");
+
+  const strip = qs("streetView360");
+  if (strip) {
+    strip.innerHTML = "";
+    headings.forEach((h) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "flex-shrink-0 w-24 h-16 rounded-lg overflow-hidden border border-slate-200 dark:border-white/10";
+      btn.title = `Heading ${h}`;
+
+      const img = document.createElement("img");
+      img.src = buildStreetViewStaticUrl({ lat: svLat, lon: svLon, key, pano, heading: h, pitch: 0, fov: 90, size: "240x160" });
+      img.alt = `Vista ${h} grados`;
+      img.className = "w-full h-full object-cover";
+      img.loading = "lazy";
+
+      btn.appendChild(img);
+      btn.addEventListener("click", () => {
+        setImg("heroImg", buildStreetViewStaticUrl({ lat: svLat, lon: svLon, key, pano, heading: h, pitch: 0, fov: 90, size: "640x640" }), `Street View: ${mountain.name}`);
+      });
+      strip.appendChild(btn);
+    });
+  }
+
+  return { used: true, streetView: true };
+}
+
+function renderWikilocRoutes(mountain, placeLabel) {
+  const root = qs("wikilocRoutes");
+  if (!root) return;
+
+  const q = [mountain?.name, placeLabel].filter(Boolean).join(" ");
+  const lat = Number(mountain?.lat);
+  const lon = Number(mountain?.lon);
+
+  // Activity ids come from Wikiloc's own map search.
+  const items = [
+    { act: 1, label: "Senderismo", icon: "filter_hdr" },
+    { act: 14, label: "Alpinismo", icon: "terrain" },
+    { act: 48, label: "Trail running", icon: "directions_run" },
+    { act: 2, label: "MTB", icon: "pedal_bike" },
+    { act: 43, label: "Paseo", icon: "hiking" }
+  ];
+
+  root.innerHTML = "";
+  items.forEach((it, idx) => {
+    const a = document.createElement("a");
+    a.href = buildWikilocMapUrl({ q, act: it.act, lat, lon, page: 1 });
+    a.target = "_blank";
+    a.rel = "noreferrer";
+    a.className = "flex items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white/60 dark:bg-background-dark/30 px-4 py-3 hover:bg-white/80 dark:hover:bg-background-dark/40 transition-colors";
+    a.innerHTML = `
+      <span class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-primary">${it.icon}</span>
+        <span class="text-sm font-bold text-slate-900 dark:text-white">Ruta ${idx + 1}: ${it.label}</span>
+      </span>
+      <span class="material-symbols-outlined text-slate-400">open_in_new</span>
+    `;
+    root.appendChild(a);
+  });
+}
+
 function buildShareUrl(mountain) {
   const p = new URLSearchParams();
   if (mountain.id) p.set("id", String(mountain.id));
@@ -151,14 +325,10 @@ async function hydratePage() {
   const mountain = getMountainFromUrlOrStorage();
 
   setText("mountainName", mountain.name);
-  setText("infoName", mountain.name);
-  setText("infoType", mountain.type === "volcano" ? "Volcán" : "Cima");
-  setText("infoElevation", formatElevation(mountain.elevation));
   setText("statAltitude", formatElevationCompact(mountain.elevation));
 
   const coordsStr = formatCoords(mountain.lat, mountain.lon);
   setText("statCoords", coordsStr);
-  setText("infoCoords", coordsStr);
 
   const osmUrl = (Number.isFinite(mountain.lat) && Number.isFinite(mountain.lon))
     ? `https://www.openstreetmap.org/?mlat=${encodeURIComponent(mountain.lat)}&mlon=${encodeURIComponent(mountain.lon)}#map=14/${encodeURIComponent(mountain.lat)}/${encodeURIComponent(mountain.lon)}`
@@ -205,11 +375,12 @@ async function hydratePage() {
   });
 
   // Location string
+  let placeLabel = "";
   try {
     if (Number.isFinite(mountain.lat) && Number.isFinite(mountain.lon)) {
-      const place = await reverseGeocode(mountain.lat, mountain.lon);
-      setText("locationTag", place);
-      setText("statPlace", place);
+      placeLabel = await reverseGeocode(mountain.lat, mountain.lon);
+      setText("locationTag", placeLabel);
+      setText("statPlace", placeLabel);
     } else {
       setText("locationTag", "Ubicación no disponible");
       setText("statPlace", "-");
@@ -218,6 +389,12 @@ async function hydratePage() {
     setText("locationTag", "Ubicación no disponible");
     setText("statPlace", "-");
   }
+
+  renderWikilocRoutes(mountain, placeLabel);
+
+  // Google images (Street View + Static Map) if API key is configured.
+  // Falls back to Wikipedia/Unsplash if not available.
+  const googleRes = await tryHydrateGoogleImages(mountain);
 
   // History + image (Wikipedia best-effort).
   let summary = null;
@@ -238,14 +415,16 @@ async function hydratePage() {
       }
     }
     const thumb = summary?.thumbnail?.source;
-    if (thumb) {
+    if (thumb && !googleRes?.streetView) {
       setImg("heroImg", thumb, `Imagen de ${mountain.name}`);
     }
   } else {
     setText("historyText", "Historia no disponible automaticamente. Si esta montana tiene pagina en Wikipedia, puedes anadir el tag OSM 'wikipedia' para mejorar esta seccion.");
     // Last-resort image that usually works without keys.
     const fallback = `https://source.unsplash.com/featured/1200x800/?mountain,peak,${encodeURIComponent(mountain.name)}`;
-    setImg("heroImg", fallback, `Imagen de ${mountain.name}`);
+    if (!googleRes?.streetView) {
+      setImg("heroImg", fallback, `Imagen de ${mountain.name}`);
+    }
   }
 }
 
